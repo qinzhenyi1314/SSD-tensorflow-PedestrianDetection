@@ -31,6 +31,16 @@ from preprocessing import preprocessing_factory
 
 slim = tf.contrib.slim
 
+
+def flatten(x):
+    result = []
+    for el in x:
+        if isinstance(el, tuple):
+            result.extend(flatten(el))
+        else:
+            result.append(el)
+    return result
+
 # =========================================================================== #
 # Some default EVAL parameters
 # =========================================================================== #
@@ -63,7 +73,7 @@ tf.app.flags.DEFINE_boolean(
 # Main evaluation flags.
 # =========================================================================== #
 tf.app.flags.DEFINE_integer(
-    'num_classes', 21, 'Number of classes to use in the dataset.')
+    'num_classes', 2, 'Number of classes to use in the dataset.')
 tf.app.flags.DEFINE_integer(
     'batch_size', 1, 'The number of samples in each batch.')
 tf.app.flags.DEFINE_integer(
@@ -132,7 +142,7 @@ def main(_):
         image_preprocessing_fn = preprocessing_factory.get_preprocessing(
             preprocessing_name, is_training=False)
 
-        tf_utils.print_configuration(FLAGS.__flags, ssd_params,
+        tf_utils.print_configuration(FLAGS, ssd_params,
                                      dataset.data_sources, FLAGS.eval_dir)
         # =================================================================== #
         # Create a dataset provider and batches.
@@ -315,7 +325,7 @@ def main(_):
                 checkpoint_path=checkpoint_path,
                 logdir=FLAGS.eval_dir,
                 num_evals=num_batches,
-                eval_op=list(names_to_updates.values()),
+                eval_op=flatten(list(names_to_updates.values())),
                 variables_to_restore=variables_to_restore,
                 session_config=config)
             # Log time spent.
@@ -334,7 +344,7 @@ def main(_):
                 checkpoint_dir=checkpoint_path,
                 logdir=FLAGS.eval_dir,
                 num_evals=num_batches,
-                eval_op=list(names_to_updates.values()),
+                eval_op=flatten(list(names_to_updates.values())),
                 variables_to_restore=variables_to_restore,
                 eval_interval_secs=60,
                 max_number_of_evaluations=np.inf,

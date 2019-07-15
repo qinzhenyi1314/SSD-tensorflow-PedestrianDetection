@@ -40,7 +40,7 @@ tf.app.flags.DEFINE_string(
     'output_name', 'pascalvoc',
     'Basename used for TFRecords output files.')
 tf.app.flags.DEFINE_string(
-    'output_dir', './',
+    'output_dir', './tfrecords',
     'Output directory where to store TFRecords files.')
 
 

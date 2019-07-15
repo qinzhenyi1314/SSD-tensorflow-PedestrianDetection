@@ -65,8 +65,10 @@ def print_configuration(flags, ssd_params, data_sources, save_dir=None):
         print('\n# =========================================================================== #', file=stream)
         print('# Training | Evaluation flags:', file=stream)
         print('# =========================================================================== #', file=stream)
-        pprint(flags, stream=stream)
-
+        #pprint(flags, stream=stream)
+        for k in flags:
+            v = flags[k].value
+            print("param [ {} ]: {}".format(k,v), file=stream)
         print('\n# =========================================================================== #', file=stream)
         print('# SSD net parameters:', file=stream)
         print('# =========================================================================== #', file=stream)

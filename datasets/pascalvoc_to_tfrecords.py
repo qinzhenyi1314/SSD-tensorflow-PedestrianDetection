@@ -61,6 +61,8 @@ from datasets.pascalvoc_common import VOC_LABELS
 # Original dataset organisation.
 DIRECTORY_ANNOTATIONS = 'Annotations/'
 DIRECTORY_IMAGES = 'JPEGImages/'
+DIRECTORY_MAIN_TRAIN = 'ImageSets/Main/train.txt'
+DIRECTORY_MAIN_TEST = 'ImageSets/Main/val.txt'
 
 # TFRecords convertion parameters.
 RANDOM_SEED = 4242
@@ -80,7 +82,7 @@ def _process_image(directory, name):
     """
     # Read the image file.
     filename = directory + DIRECTORY_IMAGES + name + '.jpg'
-    image_data = tf.gfile.FastGFile(filename, 'r').read()
+    image_data = tf.gfile.FastGFile(filename, 'rb').read()
 
     # Read the XML annotation file.
     filename = os.path.join(directory, DIRECTORY_ANNOTATIONS, name + '.xml')
@@ -195,8 +197,22 @@ def run(dataset_dir, output_dir, name='voc_train', shuffling=False):
         tf.gfile.MakeDirs(dataset_dir)
 
     # Dataset filenames, and shuffling.
-    path = os.path.join(dataset_dir, DIRECTORY_ANNOTATIONS)
-    filenames = sorted(os.listdir(path))
+    #path = os.path.join(dataset_dir, DIRECTORY_ANNOTATIONS)
+    #filenames = sorted(os.listdir(path))
+    mode = name.split('_')[-1]
+    if mode == 'train' or mode == 'test':
+        if mode == 'train':
+            path = os.path.join(dataset_dir, DIRECTORY_MAIN_TRAIN)
+        else:
+            path = os.path.join(dataset_dir, DIRECTORY_MAIN_TEST)
+    else:
+        raise ValueError('output_name [%s] is error!' % name)
+    with open(path) as f:
+        lines = f.readlines()
+    filenames = []
+    for line in lines:
+        filenames.append(line.strip('\n'))
+    filenames = sorted(filenames)
     if shuffling:
         random.seed(RANDOM_SEED)
         random.shuffle(filenames)

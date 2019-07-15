@@ -24,7 +24,7 @@ import tf_utils
 
 slim = tf.contrib.slim
 
-DATA_FORMAT = 'NCHW'
+DATA_FORMAT = 'NHWC'
 
 # =========================================================================== #
 # SSD Network flags.
@@ -40,7 +40,7 @@ tf.app.flags.DEFINE_float(
 # General Flags.
 # =========================================================================== #
 tf.app.flags.DEFINE_string(
-    'train_dir', '/tmp/tfmodel/',
+    'train_dir', './logs/',
     'Directory where checkpoints and event logs are written to.')
 tf.app.flags.DEFINE_integer('num_clones', 1,
                             'Number of model clones to deploy.')
@@ -57,13 +57,13 @@ tf.app.flags.DEFINE_integer(
     'log_every_n_steps', 10,
     'The frequency with which logs are print.')
 tf.app.flags.DEFINE_integer(
-    'save_summaries_secs', 600,
+    'save_summaries_secs', 30,
     'The frequency with which summaries are saved, in seconds.')
 tf.app.flags.DEFINE_integer(
-    'save_interval_secs', 600,
+    'save_interval_secs', 1000,
     'The frequency with which the model is saved, in seconds.')
 tf.app.flags.DEFINE_float(
-    'gpu_memory_fraction', 0.8, 'GPU memory fraction to use.')
+    'gpu_memory_fraction', 0.9, 'GPU memory fraction to use.')
 
 # =========================================================================== #
 # Optimization Flags.
@@ -132,11 +132,11 @@ tf.app.flags.DEFINE_float(
 tf.app.flags.DEFINE_string(
     'dataset_name', 'imagenet', 'The name of the dataset to load.')
 tf.app.flags.DEFINE_integer(
-    'num_classes', 21, 'Number of classes to use in the dataset.')
+    'num_classes', 2, 'Number of classes to use in the dataset.')
 tf.app.flags.DEFINE_string(
     'dataset_split_name', 'train', 'The name of the train/test split.')
 tf.app.flags.DEFINE_string(
-    'dataset_dir', None, 'The directory where the dataset files are stored.')
+    'dataset_dir', './tfrecords', 'The directory where the dataset files are stored.')
 tf.app.flags.DEFINE_integer(
     'labels_offset', 0,
     'An offset for the labels in the dataset. This flag is primarily used to '
@@ -151,7 +151,7 @@ tf.app.flags.DEFINE_integer(
     'batch_size', 32, 'The number of samples in each batch.')
 tf.app.flags.DEFINE_integer(
     'train_image_size', None, 'Train image size')
-tf.app.flags.DEFINE_integer('max_number_of_steps', None,
+tf.app.flags.DEFINE_integer('max_number_of_steps', 300000,
                             'The maximum number of training steps.')
 
 # =========================================================================== #
@@ -204,10 +204,12 @@ def main(_):
             FLAGS.dataset_name, FLAGS.dataset_split_name, FLAGS.dataset_dir)
 
         # Get the SSD network and its anchors.
+        # 初始化网络 通过get_network 以及model_name 为ssd_300_vgg 选取 vgg_300
         ssd_class = nets_factory.get_network(FLAGS.model_name)
         ssd_params = ssd_class.default_params._replace(num_classes=FLAGS.num_classes)
         ssd_net = ssd_class(ssd_params)
         ssd_shape = ssd_net.params.img_shape
+        # 生成anchor
         ssd_anchors = ssd_net.anchors(ssd_shape)
 
         # Select the preprocessing function.
